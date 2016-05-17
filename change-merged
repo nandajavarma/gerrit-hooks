@@ -48,6 +48,13 @@ function update_bugzilla()
 	    echo "Wrong product: $product" >&2;
 	    return 1;
 	fi
+    commitmsg=$(git --git-dir=/review/review.gluster.org/git/glusterfs.git log --format=%B -n 1 $COMMIT);
+    islastpatch=$(echo $commitmsg | grep -n 'Last Patch:' | cut -d : -f3 | sed -e 's/^[[:space:]]*//')
+    newcommitmsg=$(echo $commitmsg | sed -e 's/Last Patch: .*$//')
+    GIT_EDITOR=true git commit --amend -m "$newcommitmsg";
+    if [ $islastpatch == "yes" ]; then
+        bugzilla modify -s "MODIFIED" $bugid
+    fi
 
         bugzilla modify  --comment="COMMIT: $CHANGE_URL committed in $BRANCH by $SUBMITTER `echo;echo ------;git --git-dir=/review/review.gluster.org/git/glusterfs.git show $COMMIT | sed -n -e /^diff/q -e p`" $bugid;
 
