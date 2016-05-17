@@ -54,6 +54,10 @@ function update_bugzilla()
 	    return 1;
 	fi
 
+    commitmsg=$(git --git-dir=/review/review.gluster.org/git/glusterfs.git log --format=%B -n 1 $COMMIT);
+
+    islastpatch=$(echo $commitmsg | grep -n 'Last Patch:' | cut -d : -f3 | sed -e 's/^[[:space:]]*//')
+
         bugzilla modify  --comment="REVIEW: $CHANGE_URL ($patchdesc) posted (#$PATCHSET) for review on $BRANCH by $UPLOADER" $bugid;
 
         true
