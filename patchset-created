@@ -58,6 +58,18 @@ function update_bugzilla()
 
     islastpatch=$(echo $commitmsg | grep -n 'Last Patch:' | cut -d : -f3 | sed -e 's/^[[:space:]]*//')
 
+    if [ $islastpatch == "yes" ]; then
+        bugstatus=$(bugzilla query -b $bugid --outputformat='%{bug_status}');
+        if [ $bugstatus == "ON_QA" ] || [ $bugstatus == "MODIFIED" ]; then
+            version=$(bugzilla query -b $bugid --outputformat='%{version}');
+            bugzilla modify --fixed_in=version $bugid
+        fi
+        bugzilla modify -s "POST" $bugid
+    fi
+
+        assigned_to=$(bugzilla query -b $bugid --outputformat='%{assigned_to}');
+        if [[ -z $assigned_to ]]; then
+           bugzilla modify --assignee=$UPLOADER $bugid
         bugzilla modify  --comment="REVIEW: $CHANGE_URL ($patchdesc) posted (#$PATCHSET) for review on $BRANCH by $UPLOADER" $bugid;
 
         true
